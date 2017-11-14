@@ -231,6 +231,58 @@ namespace System.Linq.Tests
             }
         }
 
+        public static IEnumerable<object[]> SequencesToSort()
+        {
+            int size = 1000;
+            int iterations = 1000;
+            var rnd = new Random(1);
+            var randomSequence = Enumerable.Range(0, size).Select(_ => rnd.Next()).ToArray();
+            var asc = Enumerable.Range(0, size).ToArray();
+            var desc = Enumerable.Range(0, size).Reverse().ToArray();
+            var ascDesc = Enumerable.Range(0, size / 2)
+                .Select(i => size - i)
+                .Concat(Enumerable.Range(size / 2, size / 2))
+                .ToArray();
+            var descAsc = Enumerable.Range(0, size / 2)
+                .Concat(Enumerable.Range(0, size / 2).Select(i => size / 2 - i))
+                .ToArray();
+            var ascDescMixed = Enumerable.Range(0, size).Select(i => i % 2 == 0 ? i : size - i).ToArray();
+            yield return new object[] {size, iterations, "random", randomSequence};
+            yield return new object[] {size, iterations, "asc", asc};
+            yield return new object[] {size, iterations, "desc", desc};
+            yield return new object[] {size, iterations, "asc then desc", ascDesc};
+            yield return new object[] {size, iterations, "desc then asc", descAsc};
+            yield return new object[] {size, iterations, "asc and desc mixed", ascDescMixed};
+        }
+
+        private static void FastEnumerate<T>(IEnumerable<T> sequence)
+        {
+            using (IEnumerator<T> en = sequence.GetEnumerator())
+            {
+                while (en.MoveNext())
+                {
+                }
+            }
+        }
+
+        [Benchmark]
+        [MemberData(nameof(SequencesToSort))]
+        public void OrderDifferentSequencePatterns(int size, int iterationCount, string pattern, IEnumerable<int> sequence)
+        {
+            IEnumerable<int> ordered = sequence.OrderBy(i => i);
+
+            foreach (BenchmarkIteration iteration in Benchmark.Iterations)
+            {
+                using (iteration.StartMeasurement())
+                {
+                    for (int i = 0; i < iterationCount; i++)
+                    {
+                        FastEnumerate(ordered);
+                    }
+                }
+            }
+        }
+
         #endregion
     }
 }

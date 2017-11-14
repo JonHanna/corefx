@@ -31,6 +31,9 @@
     <Compile Include="$(CommonPath)\System\Collections\Generic\SparseArrayBuilder.cs">
       <Link>System\Collections\Generic\SparseArrayBuilder.cs</Link>
     </Compile>
+    <Compile Include="$(CommonPath)\System\XorShift128PlusRandom.cs">
+      <Link>System\XorShift128PlusRandom.cs</Link>
+    </Compile>
     <Compile Include="System\Linq\Aggregate.cs" />
     <Compile Include="System\Linq\AnyAll.cs" />
     <Compile Include="System\Linq\AppendPrepend.cs" />

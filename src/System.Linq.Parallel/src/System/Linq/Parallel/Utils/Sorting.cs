@@ -17,7 +17,7 @@ using System.Diagnostics;
 
 namespace System.Linq.Parallel
 {
-    //---------------------------------------------------------------------------------------
+    //-----------------------------------------------------------------------quic----------------
     // The sort helper abstraction hides the implementation of our parallel merge sort.  See
     // comments below for more details.  In summary, there will be one sort helper per
     // partition.  Each will, in parallel read the whole key/value set from its input,
@@ -575,7 +575,10 @@ namespace System.Linq.Parallel
         // will have been placed in sorted order based on the keys provided.
         //
 
-        private void QuickSort(int left, int right, TKey[] keys, int[] indices, CancellationToken cancelToken)
+        private void QuickSort(int left, int right, TKey[] keys, int[] indices, CancellationToken cancelToken) =>
+            QuickSort(left, right, keys, indices, XorShift128PlusRandom.Create(), cancelToken);
+
+        private void QuickSort(int left, int right, TKey[] keys, int[] indices, XorShift128PlusRandom rnd, CancellationToken cancelToken)
         {
             Debug.Assert(keys != null, "need a non-null keyset");
             Debug.Assert(keys.Length >= indices.Length);
@@ -593,7 +596,7 @@ namespace System.Linq.Parallel
             {
                 int i = left;
                 int j = right;
-                int pivot = indices[i + ((j - i) >> 1)];
+                int pivot = indices[rnd.Next(i, j)];
                 TKey pivotKey = keys[pivot];
 
                 do
@@ -625,7 +628,7 @@ namespace System.Linq.Parallel
                 {
                     if (left < j)
                     {
-                        QuickSort(left, j, keys, indices, cancelToken);
+                        QuickSort(left, j, keys, indices, rnd, cancelToken);
                     }
                     left = i;
                 }
@@ -633,7 +636,7 @@ namespace System.Linq.Parallel
                 {
                     if (i < right)
                     {
-                        QuickSort(i, right, keys, indices, cancelToken);
+                        QuickSort(i, right, keys, indices, rnd, cancelToken);
                     }
                     right = j;
                 }

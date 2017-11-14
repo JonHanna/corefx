@@ -585,11 +585,11 @@ namespace System.Linq
         protected override void QuickSort(int[] keys, int lo, int hi) =>
             Array.Sort(keys, lo, hi - lo + 1, Comparer<int>.Create(CompareAnyKeys)); // TODO #24115: Remove Create call when delegate-based overload is available
 
-
-
         // Sorts the k elements between minIdx and maxIdx without sorting all elements
         // Time complexity: O(n + k log k) best and average case. O(n^2) worse case.
-        protected override void PartialQuickSort(int[] map, int left, int right, int minIdx, int maxIdx)
+        protected override void PartialQuickSort(int[] map, int left, int right, int minIdx, int maxIdx) =>
+            PartialQuickSort(map, left, right, minIdx, maxIdx, XorShift128PlusRandom.Create());
+        private void PartialQuickSort(int[] map, int left, int right, int minIdx, int maxIdx, XorShift128PlusRandom rnd)
         {
             do
             {
@@ -638,7 +638,7 @@ namespace System.Linq
                 {
                     if (left < j)
                     {
-                        PartialQuickSort(map, left, j, minIdx, maxIdx);
+                        PartialQuickSort(map, left, j, minIdx, maxIdx, rnd);
                     }
 
                     left = i;
@@ -647,7 +647,7 @@ namespace System.Linq
                 {
                     if (i < right)
                     {
-                        PartialQuickSort(map, i, right, minIdx, maxIdx);
+                        PartialQuickSort(map, i, right, minIdx, maxIdx, rnd);
                     }
 
                     right = j;
@@ -661,11 +661,12 @@ namespace System.Linq
         protected override int QuickSelect(int[] map, int right, int idx)
         {
             int left = 0;
+            XorShift128PlusRandom rnd = XorShift128PlusRandom.Create();
             do
             {
                 int i = left;
                 int j = right;
-                int x = map[i + ((j - i) >> 1)];
+                int x = map[rnd.Next(i, j)];
                 do
                 {
                     while (i < map.Length && CompareKeys(x, map[i]) > 0)
